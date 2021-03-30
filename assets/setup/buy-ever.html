@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <title>Buy Ever</title>
+    <link rel="stylesheet" href="../../styles/css/buy-ever.css">
+  </head>
+  <body>
+    <h1>Buy Ever</h1>
+    <div id="desc">
+      You can fund (and activate) your avatar's wallet by buying it
+      EVER
+    </div>
+    <div class="ava-wallet row">
+      <label for="ava-wallet">Avatar Wallet:</label>
+      <input id="ava-wallet" disabled></input>
+    </div>
+    <div class="ava-amt row">
+      <label for="ava-amt">Amount (in EVER):</label>
+      <input id="ava-amt" value=100></input>
+      <div id="ava-activate">To activate this account we will also transfer in <b>5 XLM</b></div>
+    </div>
+    <div class="your-wallet row">
+      <label for="your-wallet">Transfer funds from:</label>
+      <input id="your-wallet" placeholder="Secret Key"></input>
+    </div>
+    <div class="from-currency row">
+      <label for="from-currency">Use Currency:</label>
+      <select id="from-currency"></select>
+    </div>
+    <div class="from-amt row">
+      <label for="from-amt">Amount:</label>
+      <span id="from-amt"></span>
+    </div>
+
+    <!-- You can also require other files to run in this process -->
+    <script src="./renderer.js"></script>
+  </body>
+</html>
