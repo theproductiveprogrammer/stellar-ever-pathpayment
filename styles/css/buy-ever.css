@@ -1,3 +1,6 @@
 body {
-  background: url("../../assets/img/bg.png");
+  background-color: blue;
+  background-image: url("../../assets/img/bg.png");
+  background-repeat:repeat-y;
+  background-size: cover;
 }
