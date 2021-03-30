@@ -3,4 +3,22 @@ body {
   background-image: url("../../assets/img/bg.png");
   background-repeat:repeat-y;
   background-size: cover;
+
+  box-sizing: border-box;
+  font-family:sans-serif;
+
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  text-align: center;
+  color: #391eda;
+  color: rgb(57, 30, 218);
+  color: #d2d6ef;
+  margin: 0;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+
+  background: linear-gradient(rgb(75, 66, 227) 0%, rgb(48, 44, 209) 100%);
 }
