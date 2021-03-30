@@ -10,30 +10,37 @@
   </head>
   <body>
     <h1>Buy Ever</h1>
-    <div id="desc">
-      You can fund (and activate) your avatar's wallet by buying it
-      EVER
-    </div>
-    <div class="ava-wallet row">
-      <label for="ava-wallet">Avatar Wallet:</label>
-      <input id="ava-wallet" disabled></input>
-    </div>
-    <div class="ava-amt row">
-      <label for="ava-amt">Amount (in EVER):</label>
-      <input id="ava-amt" value=100></input>
-      <div id="ava-activate">To activate this account we will also transfer in <b>5 XLM</b></div>
-    </div>
-    <div class="your-wallet row">
-      <label for="your-wallet">Transfer funds from:</label>
-      <input id="your-wallet" placeholder="Secret Key"></input>
-    </div>
-    <div class="from-currency row">
-      <label for="from-currency">Use Currency:</label>
-      <select id="from-currency"></select>
-    </div>
-    <div class="from-amt row">
-      <label for="from-amt">Amount:</label>
-      <span id="from-amt"></span>
+
+    <div id=body>
+
+      <div id="desc">
+        Fund your avatar's wallet
+      </div>
+      <div class="ava-wallet row">
+        <label for="ava-wallet">Avatar Wallet:</label>
+        <span id="ava-wallet"></span>
+      </div>
+      <div class="ava-amt row">
+        <label for="ava-amt">Amount (in EVER):</label>
+        <input id="ava-amt" value=100></input>
+      </div>
+      <div class="your-wallet row">
+        <label for="your-wallet">Transfer funds from:</label>
+        <input id="your-wallet" placeholder="Secret Key"></input>
+      </div>
+      <div class="from-currency row">
+        <label for="from-currency">Use Currency:</label>
+        <select id="from-currency">
+          <option>USD</option>
+          <option>XLM</option>
+        </select>
+      </div>
+      <div class="from-amt row">
+        <label for="from-amt">You will send approximately:</label>
+        <span id="from-amt"></span>
+        <div id="ava-activate">To activate the avatar account we will also transfer in <b>5 XLM</b></div>
+      </div>
+
     </div>
 
     <!-- You can also require other files to run in this process -->
