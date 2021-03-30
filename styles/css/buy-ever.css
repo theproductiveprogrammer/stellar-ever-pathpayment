@@ -61,3 +61,25 @@ input, select {
   font-size: 0.8rem;
   opacity: 0.8;
 }
+
+#ava-wallet {
+  margin-top: 0.4rem;
+  color: rgb(57, 30, 218);
+  font-weight: bold;
+}
+
+#go {
+  width: 8rem;
+  height: 2rem;
+  line-height: 2rem;
+  color: #d2d6ef;
+  background-color: #391eda;
+  text-align: center;
+  margin: 0 auto;
+  border-radius: 10px;
+  box-shadow: 1px 1px 1px 0px #180c5a;
+  cursor: pointer;
+}
+#go:hover {
+  color: #fdfdfd;
+}
