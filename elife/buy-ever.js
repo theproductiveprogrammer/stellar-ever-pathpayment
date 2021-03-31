@@ -9,13 +9,22 @@ const StellarSdk = require('stellar-sdk')
  *
  *    way/
  * Load the avatar's wallet information and
- * set up the user input handlers
+ * show it to the user, then set up the user
+ * input handlers
  */
 function main() {
     loadAvatarWallet((err, wallet) => {
         if(err) showErr(err)
-        else SetupInputHandlers(wallet)
+        else {
+            ShowWallet(wallet)
+            SetupInputHandlers({avaWallet: wallet})
+        }
     })
+}
+
+function ShowWallet(wallet) {
+    const e = document.getElementById("ava-wallet")
+    e.innerText = wallet.pub
 }
 
 
@@ -44,8 +53,28 @@ function loadAvatarWallet(cb) {
 
 }
 
-function SetupInputHandlers(avaWallet) {
-    console.log(avaWallet)
+/*      way/
+ * setup user wallet handler, currency handler, and button handler
+ */
+function SetupInputHandlers(ctx) {
+    ctx.elems = {
+        userWallet: document.getElementById("your-wallet"),
+        currency: document.getElementById("from-currency"),
+        btn: document.getElementById("go"),
+    }
+
+    setupWalletHandler(ctx)
+    setupCurrencyHandler(ctx)
+    setupButtonHandler(ctx)
+}
+
+function setupWalletHandler(ctx) {
+}
+
+function setupCurrencyHandler(ctx) {
+}
+
+function setupButtonHandler(ctx) {
 }
 
 function showErr(err) {
