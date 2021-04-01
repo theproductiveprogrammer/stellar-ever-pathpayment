@@ -20,6 +20,7 @@ function main() {
         },
         user: {
             secret: null,
+            acc: null,
         },
         view: {
             secret: null,
@@ -46,7 +47,6 @@ function ShowWallet(ctx) {
 
     if(ctx.avatar.active) {
         const em = document.getElementById("ava-activate")
-        em.style.display = "none"
     }
 }
 
@@ -102,7 +102,54 @@ function SetupInputHandlers(ctx) {
     setupButtonHandler(ctx)
 }
 
+/*      way/
+ * save the user's wallet and save the currencies
+ * the user has to update the currency drop down
+ */
 function setupWalletHandler(ctx) {
+    ctx.view.secret.addEventListener('input', () => {
+        ctx.view.currency.innerHTML = ""
+        ctx.user.secret = ctx.view.secret.value
+        ctx.user.balances = null
+        if(!ctx.user.secret) return
+        const kp = getUserKeys(ctx)
+        if(!kp) return
+        const server = getSvr()
+        const asset = new StellarSdk.Asset("XLM")
+        server.loadAccount(kp.publicKey())
+        .then(acc => {
+            ctx.user.acc = acc
+            showCurrencySelect(ctx)
+        })
+        .catch(showErr)
+    })
+}
+
+function getUserKeys(ctx) {
+    try {
+        return StellarSdk.Keypair.fromSecret(ctx.user.secret)
+    } catch(e) {
+        console.error(e)
+    }
+}
+
+function showCurrencySelect(ctx) {
+    ctx.view.currency.innerHTML = ""
+    if(!ctx.user.acc) return
+    if(!ctx.user.acc.balances) return
+    if(ctx.user.acc.balances.length > 1) {
+        const o = document.createElement("option")
+        o.innerText = "(Select)"
+        ctx.view.currency.appendChild(o)
+    } else {
+        calcAmtToSend(ctx)
+    }
+    ctx.user.acc.balances.forEach(b => {
+        const o = document.createElement("option")
+        o.innerText = b.asset_code || "XLM"
+        o.value = `${b.asset_type}:${b.asset_issuer}:${b.asset_code}`
+        ctx.view.currency.appendChild(o)
+    })
 }
 
 function setupCurrencyHandler(ctx) {
