@@ -204,22 +204,26 @@ function setupCurrencyHandler(ctx) {
 }
 
 /*    way/
- * enable the user's account if needed, then make a stellar path
- * payment to it
+ * when we have a valid path, enable the user's account
+ * if needed, then make a stellar path payment to it
  */
 function setupButtonHandler(ctx) {
-  ctx.view.button.addEventListener('click', () => {
-    enableUserAccount(ctx, err => {
-      if(err) showErr(err)
-      else makePathPayment(ctx, err => {
-        if(err) showErr(err)
-        else {
-          alert("Payment Successful!")
-          window.close()
-        }
-      })
+    ctx.view.button.addEventListener('click', () => {
+        if(!getPaymentPath(ctx)) return
+        enableUserAccount(ctx, err => {
+            if(err) showErr(err)
+            else makePathPayment(ctx, err => {
+                if(err) showErr(err)
+                else {
+                    alert("Payment Successful!")
+                    window.close()
+                }
+            })
+        })
     })
-  })
+}
+
+function getPaymentPath(ctx) {
 }
 
 /*      understand/
@@ -244,26 +248,42 @@ function getSvr(horizon) {
 function loadAvatarStatus(ctx, cb) {
     const server = getSvr()
     server.loadAccount(ctx.avatar.wallet.pub)
-    .then(acc => {
-        ctx.avatar.active = true
-        cb()
-    })
-    .catch(err => {
-        if(err && err.name === "NotFoundError") {
-            ctx.avatar.active = false
+        .then(acc => {
+            ctx.avatar.active = true
             cb()
-        } else {
-            cb(err)
-        }
+        })
+        .catch(err => {
+            if(err && err.name === "NotFoundError") {
+                ctx.avatar.active = false
+                cb()
+            } else {
+                cb(err)
+            }
+        })
+}
+
+/*    way/
+ * activate the user account and enable the EVER trustline
+ */
+function enableUserAccount(ctx, cb) {
+    activateUserAccount(ctx, err => {
+        if(err) cb(err)
+        else enableEverTrustline(ctx, cb)
     })
 }
 
-function enableUserAccount(ctx, cb) {
-  cb()
+/*    way/
+ * if the user account is not active, transfer
+ * 5 XLM and activate it
+ */
+function activateUserAccount(ctx, cb) {
+}
+
+function enableEverTrustline(ctx, cb) {
 }
 
 function makePathPayment(ctx, cb) {
-  cb()
+    cb()
 }
 
 
