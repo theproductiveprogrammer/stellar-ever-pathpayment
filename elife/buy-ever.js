@@ -203,7 +203,23 @@ function setupCurrencyHandler(ctx) {
     }
 }
 
+/*    way/
+ * enable the user's account if needed, then make a stellar path
+ * payment to it
+ */
 function setupButtonHandler(ctx) {
+  ctx.view.button.addEventListener('click', () => {
+    enableUserAccount(ctx, err => {
+      if(err) showErr(err)
+      else makePathPayment(ctx, err => {
+        if(err) showErr(err)
+        else {
+          alert("Payment Successful!")
+          window.close()
+        }
+      })
+    })
+  })
 }
 
 /*      understand/
@@ -240,6 +256,14 @@ function loadAvatarStatus(ctx, cb) {
             cb(err)
         }
     })
+}
+
+function enableUserAccount(ctx, cb) {
+  cb()
+}
+
+function makePathPayment(ctx, cb) {
+  cb()
 }
 
 
