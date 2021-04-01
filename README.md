@@ -3,3 +3,5 @@
 A quick experimental repository for experimenting with a working
 [Stellar Path Payment](https://stellar.org) for the
 [Everchain](https://everlife.ai).
+
+![interface sketch](./interface-sketch.gif)
