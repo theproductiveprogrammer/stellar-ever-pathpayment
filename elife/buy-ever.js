@@ -4,6 +4,8 @@ const u = require('@elife/utils')
 
 const StellarSdk = require('stellar-sdk')
 
+const EVER_ISSUER = process.env.EVER_ISSUER || 'GDRCJ5OJTTIL4VUQZ52PCZYAUINEH2CUSP5NC2R6D6WQ47JBLG6DF5TE'
+
 /*    understand/
  * this is the main entry point of our page
  *
@@ -22,6 +24,7 @@ function main() {
             secret: null,
             acc: null,
         },
+        paths: null,
         view: {
             secret: null,
             currency: null,
@@ -96,7 +99,7 @@ function readAvatarWallet(cb) {
 function SetupInputHandlers(ctx) {
     ctx.view.secret = document.getElementById("your-wallet")
     ctx.view.currency = document.getElementById("from-currency")
-    ctx.view.button = document.getElementById("go"),
+    ctx.view.button = document.getElementById("go")
 
     setupWalletHandler(ctx)
     setupCurrencyHandler(ctx)
@@ -116,10 +119,11 @@ function setupWalletHandler(ctx) {
         const kp = getUserKeys(ctx)
         if(!kp) return
         const server = getSvr()
-        const asset = new StellarSdk.Asset("XLM")
-        server.loadAccount(kp.publicKey())
-        .then(acc => {
-            ctx.user.acc = acc
+        const asset = new StellarSdk.Asset("EVER", EVER_ISSUER)
+        server.strictReceivePaths(kp.publicKey(), asset, 100)
+        .call()
+        .then(paths => {
+            ctx.paths = paths.records
             showCurrencySelect(ctx)
         })
         .catch(showErr)
@@ -136,21 +140,27 @@ function getUserKeys(ctx) {
 
 function showCurrencySelect(ctx) {
     ctx.view.currency.innerHTML = ""
-    if(!ctx.user.acc) return
-    if(!ctx.user.acc.balances) return
-    if(ctx.user.acc.balances.length > 1) {
+    if(!ctx.paths) return
+    const o = document.createElement("option")
+    o.innerText = "(Select)"
+    o.value = -1
+    ctx.view.currency.appendChild(o)
+    for(let i = 0;i < ctx.paths.length;i++) {
+        const p = ctx.paths[i]
         const o = document.createElement("option")
-        o.innerText = "(Select)"
+        o.innerText = p.source_asset_code || "XLM"
+        o.value = i
         ctx.view.currency.appendChild(o)
-    } else {
-        calcAmtToSend(ctx)
     }
-    ctx.user.acc.balances.forEach(b => {
-        const o = document.createElement("option")
-        o.innerText = b.asset_code || "XLM"
-        o.value = `${b.asset_type}:${b.asset_issuer}:${b.asset_code}`
-        ctx.view.currency.appendChild(o)
-    })
+    ctx.view.currency.onchange = () => {
+        const amt = document.getElementById("from-amt")
+        amt.innerHTML = ""
+        const i = ctx.view.currency.value
+        if(i < 0 || i >= ctx.paths.length) return
+        const p = ctx.paths[i]
+        const code = p.source_asset_code || "XLM"
+        amt.innerText = `${p.source_amount} ${code}`
+    }
 }
 
 function setupCurrencyHandler(ctx) {
