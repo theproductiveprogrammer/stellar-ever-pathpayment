@@ -152,18 +152,19 @@ function showCurrencySelect(ctx) {
         o.value = i
         ctx.view.currency.appendChild(o)
     }
+}
+
+function setupCurrencyHandler(ctx) {
     ctx.view.currency.onchange = () => {
         const amt = document.getElementById("from-amt")
-        amt.innerHTML = ""
+        amt.innerHTML = "0.0"
+        if(!ctx.paths) return
         const i = ctx.view.currency.value
         if(i < 0 || i >= ctx.paths.length) return
         const p = ctx.paths[i]
         const code = p.source_asset_code || "XLM"
         amt.innerText = `${p.source_amount} ${code}`
     }
-}
-
-function setupCurrencyHandler(ctx) {
 }
 
 function setupButtonHandler(ctx) {
