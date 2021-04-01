@@ -26,6 +26,8 @@ function main() {
         },
         paths: null,
         view: {
+            fromAmt: "0.0",
+            toAmt: "100",
             secret: null,
             currency: null,
             button: null,
@@ -94,43 +96,71 @@ function readAvatarWallet(cb) {
 }
 
 /*      way/
- * setup user wallet handler, currency handler, and button handler
+ * setup amount handler, user wallet handler, currency handler, and button handler
  */
 function SetupInputHandlers(ctx) {
+    ctx.view.fromAmt = document.getElementById("from-amt")
+    ctx.view.toAmt = document.getElementById("ava-amt")
     ctx.view.secret = document.getElementById("your-wallet")
     ctx.view.currency = document.getElementById("from-currency")
     ctx.view.button = document.getElementById("go")
 
+    setupAmountHandler(ctx)
     setupWalletHandler(ctx)
     setupCurrencyHandler(ctx)
     setupButtonHandler(ctx)
 }
 
-/*      way/
- * save the user's wallet and save the currencies
- * the user has to update the currency drop down
+/*      understand/
+ * When the amount changes, we need to recalculate the most
+ * optimal paths for the payments
  */
-function setupWalletHandler(ctx) {
-    ctx.view.secret.addEventListener('input', () => {
-        ctx.view.currency.innerHTML = ""
-        ctx.user.secret = ctx.view.secret.value
-        ctx.user.balances = null
-        if(!ctx.user.secret) return
-        const kp = getUserKeys(ctx)
-        if(!kp) return
-        const server = getSvr()
-        const asset = new StellarSdk.Asset("EVER", EVER_ISSUER)
-        server.strictReceivePaths(kp.publicKey(), asset, 100)
-        .call()
-        .then(paths => {
-            ctx.paths = paths.records
-            showCurrencySelect(ctx)
+function setupAmountHandler(ctx) {
+    ctx.view.toAmt.addEventListener('keyup', () => {
+        recalcPaths(ctx, err => {
+            if(err) showErr(err)
+            else showCurrencySelect(ctx)
         })
-        .catch(showErr)
     })
 }
 
+/*      way/
+ * save the user's wallet and recalculate the paths
+ * using them to update the currency drop down
+ */
+function setupWalletHandler(ctx) {
+    ctx.view.secret.addEventListener('input', () => {
+        ctx.user.secret = ctx.view.secret.value
+        ctx.user.balances = null
+        recalcPaths(ctx, err => {
+            if(err) showErr(err)
+            else showCurrencySelect(ctx)
+        })
+    })
+}
+
+/*      way/
+ * Save valid paths into the context
+ */
+function recalcPaths(ctx, cb) {
+    ctx.paths = []
+    const kp = getUserKeys(ctx)
+    if(!kp) return cb()
+    const server = getSvr()
+    const asset = new StellarSdk.Asset("EVER", EVER_ISSUER)
+    let amt = ctx.view.toAmt.value
+    if(!amt) return cb()
+    server.strictReceivePaths(kp.publicKey(), asset, amt)
+        .call()
+        .then(paths => {
+            ctx.paths = paths.records
+            cb()
+        })
+        .catch(cb)
+}
+
 function getUserKeys(ctx) {
+    if(!ctx.user.secret) return
     try {
         return StellarSdk.Keypair.fromSecret(ctx.user.secret)
     } catch(e) {
@@ -140,9 +170,12 @@ function getUserKeys(ctx) {
 
 function showCurrencySelect(ctx) {
     ctx.view.currency.innerHTML = ""
+    ctx.view.fromAmt.innerHTML = "0.0"
     if(!ctx.paths) return
     const o = document.createElement("option")
-    o.innerText = "(Select)"
+    if(!ctx.view.toAmt.value) o.innerText = ""
+    else if(!ctx.paths.length) o.innerText = "(No Payment Path Found)"
+    else o.innerText = "(Select)"
     o.value = -1
     ctx.view.currency.appendChild(o)
     for(let i = 0;i < ctx.paths.length;i++) {
@@ -154,16 +187,19 @@ function showCurrencySelect(ctx) {
     }
 }
 
+/*      way/
+ * When the selected currency changes, update the amount
+ * that will be sent from the corresponding path
+ */
 function setupCurrencyHandler(ctx) {
     ctx.view.currency.onchange = () => {
-        const amt = document.getElementById("from-amt")
-        amt.innerHTML = "0.0"
+        ctx.view.fromAmt.innerHTML = "0.0"
         if(!ctx.paths) return
         const i = ctx.view.currency.value
         if(i < 0 || i >= ctx.paths.length) return
         const p = ctx.paths[i]
         const code = p.source_asset_code || "XLM"
-        amt.innerText = `${p.source_amount} ${code}`
+        ctx.view.fromAmt.innerText = `${p.source_amount} ${code}`
     }
 }
 
