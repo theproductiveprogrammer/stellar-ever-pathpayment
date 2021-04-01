@@ -194,10 +194,8 @@ function showCurrencySelect(ctx) {
 function setupCurrencyHandler(ctx) {
     ctx.view.currency.onchange = () => {
         ctx.view.fromAmt.innerHTML = "0.0"
-        if(!ctx.paths) return
-        const i = ctx.view.currency.value
-        if(i < 0 || i >= ctx.paths.length) return
-        const p = ctx.paths[i]
+        const p = getPaymentPath(ctx)
+        if(!p) return
         const code = p.source_asset_code || "XLM"
         ctx.view.fromAmt.innerText = `${p.source_amount} ${code}`
     }
@@ -224,6 +222,11 @@ function setupButtonHandler(ctx) {
 }
 
 function getPaymentPath(ctx) {
+    if(!ctx.paths) return
+    if(!ctx.paths.length) return
+    const i = ctx.view.currency.value
+    if(i < 0 || i >= ctx.paths.length) return
+    return ctx.paths[i]
 }
 
 /*      understand/
@@ -277,9 +280,11 @@ function enableUserAccount(ctx, cb) {
  * 5 XLM and activate it
  */
 function activateUserAccount(ctx, cb) {
+    cb()
 }
 
 function enableEverTrustline(ctx, cb) {
+    cb()
 }
 
 function makePathPayment(ctx, cb) {
