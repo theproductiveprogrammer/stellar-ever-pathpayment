@@ -18,7 +18,7 @@ function main() {
     const ctx = {
         avatar: {
             wallet: null,
-            active: false,
+            acc: null,
         },
         user: {
             secret: null,
@@ -50,7 +50,7 @@ function ShowWallet(ctx) {
     const ew = document.getElementById("ava-wallet")
     ew.innerText = ctx.avatar.wallet.pub
 
-    if(ctx.avatar.active) {
+    if(!ctx.avatar.acc) {
         const em = document.getElementById("ava-activate")
         em.style.display = "block"
     }
@@ -65,7 +65,7 @@ function loadAvatarWallet(ctx, cb) {
         if(err) cb(err)
         else {
             ctx.avatar.wallet = wallet
-            loadAvatarStatus(ctx, cb)
+            loadAvatarAccount(ctx, cb)
         }
     })
 }
@@ -202,20 +202,24 @@ function setupCurrencyHandler(ctx) {
 }
 
 /*    way/
- * when we have a valid path, enable the user's account
- * if needed, then make a stellar path payment to it
+ * when we have a valid path, get the user's account and 
+ * use it to enable the avatar's account if needed,
+ * then make a stellar path payment to it
  */
 function setupButtonHandler(ctx) {
     ctx.view.button.addEventListener('click', () => {
         if(!getPaymentPath(ctx)) return
-        enableUserAccount(ctx, err => {
+        loadUserAccount(ctx, err => {
             if(err) showErr(err)
-            else makePathPayment(ctx, err => {
+            else enableAvatarAccount(ctx, err => {
                 if(err) showErr(err)
-                else {
-                    alert("Payment Successful!")
-                    window.close()
-                }
+                else makePathPayment(ctx, err => {
+                    if(err) showErr(err)
+                    else {
+                        alert("Payment Successful!")
+                        //window.close()
+                    }
+                })
             })
         })
     })
@@ -247,43 +251,90 @@ function getSvr(horizon) {
         return new StellarSdk.Server(LIVE_HORIZON)
     }
 }
+function getNetworkPassphrase() {
+    if("test" === process.env.ELIFE_STELLAR_HORIZON) {
+        return StellarSdk.Networks.TESTNET
+    } else {
+        return StellarSdk.Networks.PUBLIC
+    }
+}
 
-function loadAvatarStatus(ctx, cb) {
+
+function loadAvatarAccount(ctx, cb) {
     const server = getSvr()
+    ctx.avatar.acc = null
     server.loadAccount(ctx.avatar.wallet.pub)
         .then(acc => {
-            ctx.avatar.active = true
+            ctx.avatar.acc = acc
             cb()
         })
         .catch(err => {
-            if(err && err.name === "NotFoundError") {
-                ctx.avatar.active = false
-                cb()
-            } else {
-                cb(err)
-            }
+            if(err && err.name === "NotFoundError") cb()
+            else cb(err)
         })
 }
 
+function loadUserAccount(ctx, cb) {
+    const server = getSvr()
+    const kp = getUserKeys(ctx)
+    if(!kp) return cb("Error: failed getting user keys")
+    server.loadAccount(kp.publicKey())
+        .then(acc => {
+            ctx.user.acc = acc
+            cb()
+        })
+        .catch(cb)
+}
+
 /*    way/
- * activate the user account and enable the EVER trustline
+ * activate the avatar account and enable the EVER trustline
  */
-function enableUserAccount(ctx, cb) {
-    activateUserAccount(ctx, err => {
+function enableAvatarAccount(ctx, cb) {
+    activateAvatarAccount(ctx, err => {
         if(err) cb(err)
         else enableEverTrustline(ctx, cb)
     })
 }
 
 /*    way/
- * if the user account is not active, transfer
- * 5 XLM and activate it
+ * if the account is not active, make a path payment of
+ * 5 XLM to activate it
  */
-function activateUserAccount(ctx, cb) {
-    cb()
+function activateAvatarAccount(ctx, cb) {
+    if(ctx.avatar.acc) return cb()
+
+    const dest = ctx.avatar.wallet.pub
+    if(!dest) return cb("Error: Wallet not found")
+
+    const acc = ctx.user.acc
+    if(!acc) return cb("Error: User account not found")
+
+    const kp = getUserKeys(ctx)
+    if(!kp) return cb("Error: Failed getting user Keys")
+
+    const server = getSvr()
+
+    const op = {
+        destination: dest,
+        startingBalance: "5",
+    }
+
+    server.fetchBaseFee()
+        .then(fee => {
+            const txn = new StellarSdk.TransactionBuilder(acc, { fee, networkPassphrase: getNetworkPassphrase() })
+                .addOperation(StellarSdk.Operation.createAccount(op))
+                .setTimeout(30)
+                .build()
+            txn.sign(kp)
+            server.submitTransaction(txn)
+                .then(() => loadAvatarAccount(ctx, cb))
+                .catch(cb)
+        })
+        .catch(cb)
 }
 
 function enableEverTrustline(ctx, cb) {
+    console.log(ctx)
     cb()
 }
 
