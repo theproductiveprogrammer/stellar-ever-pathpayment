@@ -86,3 +86,8 @@ input, select {
 #go:hover {
   color: #fdfdfd;
 }
+#go.disabled {
+  color: #8691d5;
+  background-color: #634be7;
+  box-shadow: inset 1px 1px 1px 0px #180c5a
+}

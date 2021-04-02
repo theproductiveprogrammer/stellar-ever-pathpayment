@@ -207,8 +207,13 @@ function setupCurrencyHandler(ctx) {
  * then make a stellar path payment to it
  */
 function setupButtonHandler(ctx) {
+    let clicked = false
+
     ctx.view.button.addEventListener('click', () => {
         if(!getPaymentPath(ctx)) return
+        if(clicked) return
+        clicked = true
+        ctx.view.button.classList.add("disabled")
         loadUserAccount(ctx, err => {
             if(err) showErr(err)
             else enableAvatarAccount(ctx, err => {
