@@ -338,12 +338,47 @@ function activateAvatarAccount(ctx, cb) {
         .catch(cb)
 }
 
+/*      way/
+ * If the avatar does not have ever balance, enable a trustline
+ * for the EVER asset so it can start to receive it
+ */
 function enableEverTrustline(ctx, cb) {
-    console.log(ctx)
-    cb()
+    const acc = ctx.avatar.acc
+    if(!acc) return cb("Error: Invalid avatar account")
+
+    if(has_ever_1(acc.balances)) return cb()
+
+    const asset = new StellarSdk.Asset("EVER", EVER_ISSUER)
+
+    const server = getSvr()
+
+    server.fetchBaseFee()
+        .then(fee => {
+            const txn = new StellarSdk.TransactionBuilder(acc, { fee, networkPassphrase: getNetworkPassphrase() })
+                .addOperation(StellarSdk.Operation.changeTrust({ asset }))
+                .setTimeout(30)
+                .build()
+            txn.sign(ctx.avatar.wallet._kp)
+            server.submitTransaction(txn)
+                .then(() => loadAvatarAccount(ctx, cb))
+                .catch(cb)
+        })
+        .catch(cb)
+
+    function has_ever_1(balances) {
+        if(!balances) return false
+        for(let i = 0;i < balances.length;i++) {
+            const b = balances[i]
+            console.log(b.asset_code, b.asset_issuer)
+            console.log(b.asset_code === "EVER", b.asset_issuer === EVER_ISSUER)
+            if(b.asset_code === "EVER" && b.asset_issuer === EVER_ISSUER) return true
+        }
+        return false
+    }
 }
 
 function makePathPayment(ctx, cb) {
+    console.log(ctx)
     cb()
 }
 
