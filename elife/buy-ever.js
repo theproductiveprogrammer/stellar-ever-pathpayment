@@ -222,7 +222,7 @@ function setupButtonHandler(ctx) {
                     if(err) showErr(err)
                     else {
                         alert("Payment Successful!")
-                        //window.close()
+                        window.close()
                     }
                 })
             })
