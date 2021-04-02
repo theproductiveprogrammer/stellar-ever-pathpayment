@@ -369,8 +369,6 @@ function enableEverTrustline(ctx, cb) {
         if(!balances) return false
         for(let i = 0;i < balances.length;i++) {
             const b = balances[i]
-            console.log(b.asset_code, b.asset_issuer)
-            console.log(b.asset_code === "EVER", b.asset_issuer === EVER_ISSUER)
             if(b.asset_code === "EVER" && b.asset_issuer === EVER_ISSUER) return true
         }
         return false
