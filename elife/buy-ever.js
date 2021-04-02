@@ -52,7 +52,7 @@ function ShowWallet(ctx) {
 
     if(ctx.avatar.active) {
         const em = document.getElementById("ava-activate")
-        em.innerHTML = ""
+        em.style.display = "block"
     }
 }
 
