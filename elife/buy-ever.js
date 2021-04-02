@@ -377,9 +377,48 @@ function enableEverTrustline(ctx, cb) {
     }
 }
 
+/*      way/
+ * make the path payment for the destination amount
+ */
 function makePathPayment(ctx, cb) {
-    console.log(ctx)
-    cb()
+    const p = getPaymentPath(ctx)
+    if(!p) return cb("Error: No payment path set")
+
+    const dest = ctx.avatar.wallet.pub
+    if(!dest) return cb("Error: Wallet not found")
+
+    const acc = ctx.user.acc
+    if(!acc) return cb("Error: User account not found")
+
+    const kp = getUserKeys(ctx)
+    if(!kp) return cb("Error: Failed getting user Keys")
+
+    const server = getSvr()
+
+    let sendAsset
+    if(p.source_asset_type === "native") sendAsset = StellarSdk.Asset.native()
+    else sendAsset = new StellarSdk.Asset(p.source_asset_code, p.source_asset_issuer)
+
+    const op = {
+        sendAsset,
+        sendMax: p.source_amount,
+        destination: dest,
+        destAsset: new StellarSdk.Asset(p.destination_asset_code, p.destination_asset_issuer),
+        destAmount: p.destination_amount,
+    }
+
+    server.fetchBaseFee()
+        .then(fee => {
+            const txn = new StellarSdk.TransactionBuilder(acc, { fee, networkPassphrase: getNetworkPassphrase() })
+                .addOperation(StellarSdk.Operation.pathPaymentStrictReceive(op))
+                .setTimeout(30)
+                .build()
+            txn.sign(kp)
+            server.submitTransaction(txn)
+                .then(() => cb())
+                .catch(cb)
+        })
+        .catch(cb)
 }
 
 
